@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>poopee — CleanTrust</title>
+  <meta name="description" content="CleanTrust public sanitation, trust and sanitation-work platform.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root{
+      --navy:#10213b;--green:#16a66a;--green2:#0c7d50;--mint:#e9f8f1;
+      --yellow:#f2b84b;--red:#e05252;--blue:#2f7de1;--ink:#172033;
+      --muted:#6d788b;--line:#e7ebf1;--bg:#f7f9fc;--white:#fff;
+      --shadow:0 18px 50px rgba(16,33,59,.08);--radius:22px;
+    }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",sans-serif}
+    h1,h2,h3,h4{font-family:"Space Grotesk",sans-serif;margin:0} button,input,select,textarea{font:inherit}
+    button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}.sidebar{width:248px;background:var(--navy);color:white;padding:24px 16px;position:fixed;inset:0 auto 0 0;z-index:20}
+    .brand{display:flex;align-items:center;gap:10px;padding:8px 12px 28px}.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#27c887,#0d8354);display:grid;place-items:center;font-weight:800}
+    .brand strong{font-size:20px}.brand small{display:block;color:#9fb0c8;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+    .nav{display:grid;gap:6px}.nav button{background:transparent;color:#b9c5d6;text-align:left;padding:12px 13px;border-radius:13px;display:flex;gap:11px;align-items:center}.nav button:hover,.nav button.active{background:rgba(255,255,255,.1);color:#fff}
+    .sidebar-bottom{position:absolute;bottom:22px;left:16px;right:16px}.rolebox{background:rgba(255,255,255,.07);padding:13px;border-radius:15px;color:#c9d3e0;font-size:12px}.rolebox select{width:100%;margin-top:7px;background:#1d3150;color:white;border:1px solid #344965;padding:8px;border-radius:9px}
+    main{margin-left:248px;width:calc(100% - 248px);min-width:0}.topbar{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:15}
+    .topbar .location{color:var(--muted);font-size:13px}.top-actions{display:flex;gap:10px;align-items:center}.iconbtn{width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:12px}
+    .avatar{width:40px;height:40px;border-radius:50%;background:var(--mint);color:var(--green2);display:grid;place-items:center;font-weight:700}
+    .content{padding:28px;max-width:1500px;margin:auto}.page{display:none}.page.active{display:block}
+    .hero{background:linear-gradient(120deg,#10213b 0%,#183a50 58%,#0e7f54 100%);border-radius:28px;padding:34px;color:white;position:relative;overflow:hidden;margin-bottom:24px}.hero:after{content:"";position:absolute;width:260px;height:260px;border:42px solid rgba(255,255,255,.06);border-radius:50%;right:-60px;top:-110px}
+    .hero h1{font-size:clamp(28px,4vw,48px);max-width:700px;line-height:1.04}.hero p{color:#c9d8e7;max-width:670px;line-height:1.6}.actions{display:flex;gap:10px;flex-wrap:wrap}.primary{background:#fff;color:var(--navy);padding:12px 17px;border-radius:12px;font-weight:700}.greenbtn{background:var(--green);color:white;padding:12px 17px;border-radius:12px;font-weight:700}.ghost{background:transparent;border:1px solid #dbe3ee;color:inherit;padding:11px 16px;border-radius:12px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}.stat,.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 5px 25px rgba(16,33,59,.035)}.stat{padding:20px}.stat .num{font:700 29px "Space Grotesk";margin:6px 0}.muted{color:var(--muted);font-size:13px}.trend{color:var(--green2);font-size:12px;font-weight:700}
+    .grid2{display:grid;grid-template-columns:1.35fr .65fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{padding:20px}.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.card h2{font-size:19px}
+    #map{height:450px;border-radius:17px;overflow:hidden}.mapwrap{padding:12px}.leaflet-container{font-family:"DM Sans",sans-serif}
+    .toilets{display:grid;gap:12px}.toilet{padding:16px;border:1px solid var(--line);border-radius:17px;background:#fff;transition:.2s}.toilet:hover{transform:translateY(-2px);box-shadow:var(--shadow)}.toilet-top{display:flex;justify-content:space-between;gap:10px}.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:700}.good{background:#e8f8f0;color:#08734a}.warn{background:#fff5dd;color:#9b6b12}.bad{background:#fdeaea;color:#b53b3b}.closed{background:#eef0f4;color:#667085}.score{font:700 24px "Space Grotesk"}.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:13px 0}.mini{background:var(--bg);padding:10px;border-radius:11px}.mini b{display:block;font-size:14px}.mini span{font-size:10px;color:var(--muted)}
+    .section-title{margin:12px 0 18px}.section-title h1{font-size:28px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}.input,.select,.textarea{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 13px;outline:none;width:100%}.input:focus,.select:focus,.textarea:focus{border-color:#93cdb5;box-shadow:0 0 0 3px #e5f5ee}.search{flex:1;min-width:220px}
+    .jobs{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}.job{padding:20px}.job .pay{font:700 22px "Space Grotesk";color:var(--green2)}.job-meta{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}
+    .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:7px}.field label{font-size:12px;font-weight:700;color:#526074}.field.full{grid-column:1/-1}.textarea{min-height:110px;resize:vertical}.upload{border:1.5px dashed #cbd4e0;border-radius:16px;padding:22px;text-align:center;background:#fbfcfe}.upload input{margin-top:12px}
+    .details{display:grid;grid-template-columns:1fr .8fr;gap:18px}.score-ring{width:155px;height:155px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green) 0 87%,#e7edf3 87%);position:relative;margin:auto}.score-ring:after{content:"";position:absolute;inset:11px;border-radius:50%;background:#fff}.score-ring strong{position:relative;z-index:1;font:700 38px "Space Grotesk"}.bars{display:grid;gap:14px}.barrow{display:grid;grid-template-columns:120px 1fr 38px;align-items:center;gap:9px;font-size:12px}.bar{height:8px;background:#edf1f5;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green);border-radius:99px}
+    .impact{background:linear-gradient(135deg,#eaf8f1,#f7fcfa);border-color:#d8efe4}.impact .big{font:700 34px "Space Grotesk"}.notice{padding:12px 14px;border-radius:12px;background:#fff8e9;color:#8a6419;font-size:12px}.notification{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.dot{width:9px;height:9px;border-radius:50%;background:var(--green);margin-top:5px;flex:none}
+    .modal{display:none;position:fixed;inset:0;background:rgba(8,18,33,.55);z-index:100;padding:24px;place-items:center}.modal.show{display:grid}.modalbox{background:white;border-radius:24px;max-width:720px;width:100%;max-height:90vh;overflow:auto;padding:24px}.close{float:right;background:#f2f4f7;border-radius:10px;width:34px;height:34px}
+    .toast{position:fixed;right:22px;bottom:22px;background:#10213b;color:#fff;padding:13px 16px;border-radius:13px;box-shadow:var(--shadow);z-index:200;display:none}.toast.show{display:block}
+    .demo-pill{display:inline-flex;background:rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;font-size:11px;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:13px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+    @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.grid2,.details{grid-template-columns:1fr}.jobs{grid-template-columns:1fr}}
+    @media(max-width:760px){.sidebar{width:72px;padding:18px 9px}.brand{padding:8px 4px 24px}.brand strong,.brand small,.nav button span,.rolebox{display:none}.nav button{justify-content:center}.sidebar-bottom{left:9px;right:9px}main{margin-left:72px;width:calc(100% - 72px)}.topbar{padding:0 16px}.content{padding:16px}.hero{padding:24px}.stats{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}#map{height:360px}}
+    @media(max-width:480px){.stats{grid-template-columns:1fr}.topbar .location{display:none}.mini-grid{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">P</div><div><strong>poopee</strong><small>CleanTrust</small></div></div>
+    <nav class="nav" id="nav">
+      <button class="active" data-page="home">⌂ <span>Home</span></button>
+      <button data-page="toilets">⌖ <span>Nearby Toilets</span></button>
+      <button data-page="report">＋ <span>Report Issue</span></button>
+      <button data-page="work">▣ <span>Find Work</span></button>
+      <button data-page="jobs">✓ <span>My Jobs</span></button>
+      <button data-page="notifications">◉ <span>Notifications</span></button>
+      <button data-page="profile">◯ <span>Profile</span></button>
+      <button data-page="admin" class="admin-only">▦ <span>Admin</span></button>
+    </nav>
+    <div class="sidebar-bottom"><div class="rolebox">Demo role<select id="roleSelect"><option value="citizen">Citizen</option><option value="worker">Worker</option><option value="admin">Facility Manager</option></select></div></div>
+  </aside>
+
+  <main>
+    <header class="topbar"><div class="location">📍 Demo City · Location services available</div><div class="top-actions"><button class="iconbtn" onclick="go('notifications')">🔔</button><div class="avatar">SG</div></div></header>
+    <div class="content">
+
+      <section id="page-home" class="page active">
+        <div class="hero">
+          <span class="demo-pill">LIVE DEMO MODE · 8 monitored toilets</span>
+          <h1>Don't Just Find a Toilet.<br>Know If You Can Trust It.</h1>
+          <p>CleanTrust connects citizens, sanitation workers and facility managers to make public sanitation more transparent, responsive and accessible.</p>
+          <div class="actions"><button class="primary" onclick="go('toilets')">FIND A TOILET</button><button class="ghost" onclick="go('work')">FIND SANITATION WORK</button></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="muted">Monitored toilets</span><div class="num">148</div><span class="trend">↑ 12 this month</span></div>
+          <div class="stat"><span class="muted">Issues resolved</span><div class="num">6,200</div><span class="trend">↑ 8.4%</span></div>
+          <div class="stat"><span class="muted">Jobs completed</span><div class="num">2,840</div><span class="trend">↑ 14.2%</span></div>
+          <div class="stat"><span class="muted">Wages facilitated</span><div class="num">₹8.4L</div><span class="trend">↑ ₹1.2L</span></div>
+        </div>
+        <div class="grid2">
+          <div class="card mapwrap"><div class="card-head"><h2>Nearby sanitation map</h2><button class="greenbtn" onclick="findNearest()">Find Nearest Toilet</button></div><div id="map"></div></div>
+          <div class="card"><div class="card-head"><h2>Top trusted nearby</h2><span class="muted">Updated live</span></div><div class="toilets" id="homeToilets"></div></div>
+        </div>
+      </section>
+
+      <section id="page-toilets" class="page">
+        <div class="section-title"><h1>Nearby Toilets</h1><p class="muted">Condition, freshness and trust — before you go.</p></div>
+        <div class="toolbar"><input class="input search" id="toiletSearch" placeholder="Search toilet or area..." oninput="renderToilets()"><select class="select" id="trustFilter" style="max-width:180px" onchange="renderToilets()"><option value="all">All trust levels</option><option value="high">High trust</option><option value="moderate">Moderate</option><option value="low">Needs attention</option></select></div>
+        <div class="grid2"><div class="card mapwrap"><div id="map2"></div></div><div class="toilets" id="toiletList"></div></div>
+      </section>
+
+      <section id="page-report" class="page">
+        <div class="section-title"><h1>Report an Issue</h1><p class="muted">Help the next person by reporting what you see.</p></div>
+        <div class="card">
+          <form id="reportForm" class="formgrid">
+            <div class="field"><label>TOILET</label><select class="select" id="reportToilet"></select></div>
+            <div class="field"><label>ISSUE TYPE</label><select class="select" id="issueType"><option>Dirty toilet</option><option>No water</option><option>Broken toilet</option><option>Overflowing waste</option><option>Bad smell</option><option>No lighting</option><option>Accessibility problem</option><option>Toilet closed</option><option>Other</option></select></div>
+            <div class="field full"><label>DESCRIPTION</label><textarea class="textarea" id="description" placeholder="Tell us what needs attention..."></textarea></div>
+            <div class="field full"><label>PHOTO</label><div class="upload"><b>Upload evidence</b><div class="muted">JPG, PNG · AI-assisted analysis is only a support signal</div><input type="file" id="issueImage" accept="image/*" onchange="previewImage()"><div id="preview"></div></div></div>
+            <div class="field full"><div class="notice" id="aiResult">AI-assisted analysis will appear here after a photo is selected.</div></div>
+            <div class="field full"><button class="greenbtn" type="submit">SUBMIT REPORT</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section id="page-work" class="page">
+        <div class="section-title"><h1>Find Sanitation Work</h1><p class="muted">Local cleaning and maintenance opportunities.</p></div>
+        <div class="toolbar"><input class="input search" id="jobSearch" placeholder="Search location or job type..." oninput="renderJobs()"><select class="select" style="max-width:160px" id="payFilter" onchange="renderJobs()"><option value="0">Any payment</option><option value="500">₹500+</option><option value="700">₹700+</option></select><select class="select" style="max-width:160px"><option>Any distance</option><option>Under 2 km</option><option>Under 5 km</option></select></div>
+        <div class="jobs" id="jobList"></div>
+      </section>
+
+      <section id="page-jobs" class="page">
+        <div class="section-title"><h1>My Jobs</h1><p class="muted">Track applications, accepted tasks and earnings.</p></div>
+        <div class="stats"><div class="stat"><span class="muted">Completed</span><div class="num">127</div></div><div class="stat"><span class="muted">On-time</span><div class="num">96%</div></div><div class="stat"><span class="muted">This month</span><div class="num">₹8,400</div></div><div class="stat"><span class="muted">Rating</span><div class="num">4.7 ★</div></div></div>
+        <div class="card"><div class="card-head"><h2>Today's Job</h2><span class="badge good">ACCEPTED</span></div><h3>Central Market Public Toilet</h3><p class="muted">Cleaning and maintenance · 7:00 PM – 9:00 PM</p><p class="pay">₹600</p><div class="actions"><button class="greenbtn" onclick="completeJob()">START / COMPLETE JOB</button><button class="ghost" style="color:var(--navy)" onclick="showToast('Directions opened in demo mode.')">NAVIGATE</button></div></div>
+        <br><div class="card"><div class="card-head"><h2>Recent jobs</h2></div><table><thead><tr><th>Location</th><th>Task</th><th>Payment</th><th>Status</th></tr></thead><tbody><tr><td>Metro Gate 2</td><td>Deep cleaning</td><td>₹750</td><td><span class="badge good">COMPLETED</span></td></tr><tr><td>City Park</td><td>Maintenance</td><td>₹900</td><td><span class="badge good">COMPLETED</span></td></tr><tr><td>Bus Terminal</td><td>Cleaning</td><td>₹650</td><td><span class="badge warn">PENDING</span></td></tr></tbody></table></div>
+      </section>
+
+      <section id="page-notifications" class="page">
+        <div class="section-title"><h1>Notifications</h1><p class="muted">Stay updated on sanitation activity.</p></div>
+        <div class="card" id="notifications"></div>
+      </section>
+
+      <section id="page-profile" class="page">
+        <div class="section-title"><h1>Profile</h1><p class="muted">Your CleanTrust account and role.</p></div>
+        <div class="card formgrid"><div class="field"><label>NAME</label><input class="input" value="Saanvi Grover"></div><div class="field"><label>ROLE</label><select class="select"><option>Citizen / Public User</option><option>Sanitation Worker / Job Seeker</option><option>Facility Manager</option></select></div><div class="field"><label>PREFERRED AREA</label><input class="input" value="Demo City"></div><div class="field"><label>AVAILABILITY</label><input class="input" value="Evenings"></div><div class="field full"><label>ABOUT</label><textarea class="textarea">CleanTrust demo profile. Personal contact information is not publicly exposed.</textarea></div><div class="field full"><button class="greenbtn" onclick="showToast('Profile saved in demo mode.')">SAVE PROFILE</button></div></div>
+      </section>
+
+      <section id="page-admin" class="page">
+        <div class="section-title"><h1>Sanitation Command Center</h1><p class="muted">Facility manager and admin overview.</p></div>
+        <div class="stats"><div class="stat"><span class="muted">Monitored toilets</span><div class="num">148</div></div><div class="stat"><span class="muted">High Trust</span><div class="num">97</div></div><div class="stat"><span class="muted">Need Attention</span><div class="num">32</div></div><div class="stat"><span class="muted">Critical</span><div class="num">19</div></div></div>
+        <div class="grid2"><div class="card"><div class="card-head"><h2>Issues over time</h2><span class="muted">Last 7 days</span></div><canvas id="chart" height="180"></canvas></div><div class="card"><div class="card-head"><h2>Critical issues</h2></div><div class="notification"><span class="dot" style="background:var(--red)"></span><div><b>7 water problems</b><div class="muted">Central Market and 4 other facilities</div></div></div><div class="notification"><span class="dot" style="background:var(--yellow)"></span><div><b>5 maintenance problems</b><div class="muted">Fixtures require attention</div></div></div><div class="notification"><span class="dot" style="background:var(--red)"></span><div><b>4 cleanliness complaints</b><div class="muted">New reports in the last hour</div></div></div><div class="notification"><span class="dot" style="background:#8b95a7"></span><div><b>3 closed facilities</b><div class="muted">Verify closure status</div></div></div></div></div>
+        <br><div class="card"><div class="card-head"><h2>Recent reports</h2><button class="greenbtn" onclick="go('report')">Create response job</button></div><table><thead><tr><th>Toilet</th><th>Issue</th><th>Reported</th><th>Action</th></tr></thead><tbody id="adminReports"></tbody></table></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const toilets=[
+ {id:1,name:"Central Market Public Toilet",area:"Central Market",trust:91,condition:94,freshness:96,clean:"GOOD",water:"AVAILABLE",open:true,accessible:true,cleaned:"8 min ago",distance:.45,lat:28.6827,lng:77.2062,reports:1},
+ {id:2,name:"Metro Gate 2 Toilet",area:"Metro Gate 2",trust:87,condition:88,freshness:91,clean:"GOOD",water:"AVAILABLE",open:true,accessible:true,cleaned:"18 min ago",distance:.8,lat:28.6700,lng:77.2140,reports:0},
+ {id:3,name:"City Park Facility",area:"City Park",trust:73,condition:70,freshness:78,clean:"FAIR",water:"AVAILABLE",open:true,accessible:false,cleaned:"2 hrs ago",distance:1.3,lat:28.692,lng:77.225,reports:2},
+ {id:4,name:"Bus Terminal Toilet",area:"Bus Terminal",trust:62,condition:64,freshness:55,clean:"FAIR",water:"LIMITED",open:true,accessible:true,cleaned:"8 hrs ago",distance:1.8,lat:28.655,lng:77.222,reports:4},
+ {id:5,name:"Community Health Centre",area:"Health Centre",trust:48,condition:51,freshness:39,clean:"POOR",water:"NO WATER",open:true,accessible:true,cleaned:"2 days ago",distance:2.1,lat:28.700,lng:77.195,reports:5},
+ {id:6,name:"Railway Road Facility",area:"Railway Road",trust:35,condition:40,freshness:25,clean:"POOR",water:"NO WATER",open:false,accessible:false,cleaned:"3 days ago",distance:2.7,lat:28.662,lng:77.192,reports:7},
+ {id:7,name:"Lakeside Public Toilet",area:"Lakeside",trust:82,condition:85,freshness:82,clean:"GOOD",water:"AVAILABLE",open:true,accessible:true,cleaned:"42 min ago",distance:3.2,lat:28.712,lng:77.235,reports:1},
+ {id:8,name:"Sports Complex Toilet",area:"Sports Complex",trust:77,condition:79,freshness:75,clean:"GOOD",water:"AVAILABLE",open:true,accessible:false,cleaned:"1 hr ago",distance:3.8,lat:28.641,lng:77.205,reports:1}
+];
+const jobs=[
+ {id:1,title:"Cleaning worker needed",location:"Central Market Public Toilet",task:"Toilet cleaning and maintenance",duration:"4 hours",pay:600,distance:1.2,time:"7:00 PM",type:"Cleaning"},
+ {id:2,title:"Maintenance assistant",location:"Community Health Centre",task:"Water fixture inspection",duration:"3 hours",pay:850,distance:2.1,time:"5:30 PM",type:"Maintenance"},
+ {id:3,title:"Deep cleaning crew",location:"Metro Gate 2 Toilet",task:"Deep cleaning and sanitisation",duration:"5 hours",pay:750,distance:.8,time:"6:00 PM",type:"Cleaning"},
+ {id:4,title:"Facility cleaner",location:"Lakeside Public Toilet",task:"Routine cleaning",duration:"3 hours",pay:550,distance:3.2,time:"8:00 AM",type:"Cleaning"},
+ {id:5,title:"Repair & maintenance",location:"Railway Road Facility",task:"Basic facility maintenance",duration:"4 hours",pay:900,distance:2.7,time:"10:00 AM",type:"Maintenance"},
+ {id:6,title:"Sanitation attendant",location:"Sports Complex Toilet",task:"Cleaning and supplies",duration:"6 hours",pay:800,distance:3.8,time:"9:00 AM",type:"Cleaning"}
+];
+let map, map2, markers=[], reports=[
+ {toilet:"Community Health Centre",issue:"No water",time:"4 min ago"},
+ {toilet:"Bus Terminal Toilet",issue:"Dirty toilet",time:"12 min ago"},
+ {toilet:"Railway Road Facility",issue:"Toilet closed",time:"21 min ago"},
+ {toilet:"Central Market Public Toilet",issue:"Bad smell",time:"32 min ago"}
+];
+
+function trustClass(n){return n>=80?"good":n>=60?"warn":"bad"}
+function badge(text,cls){return `<span class="badge ${cls}">${text}</span>`}
+function go(page){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ const target=document.getElementById("page-"+page); if(target)target.classList.add("active");
+ document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
+ if(page==="toilets"){renderToilets();setTimeout(()=>initMap("map2"),50)}
+ if(page==="home")setTimeout(()=>initMap("map"),50);
+ if(page==="admin")setTimeout(drawChart,50);
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function toiletCard(t){
+ const cls=trustClass(t.trust);
+ return `<div class="toilet" onclick="details(${t.id})"><div class="toilet-top"><div><div class="muted">PUBLIC TOILET</div><h3>${t.name}</h3><div class="muted">${t.area} · ${t.distance} km away</div></div><div style="text-align:right"><div class="score">${t.trust}</div>${badge("TRUST",cls)}</div></div>
+ <div class="mini-grid"><div class="mini"><b>${t.open?badge("OPEN","good"):badge("CLOSED","closed")}</b><span>STATUS</span></div><div class="mini"><b>${t.clean}</b><span>CLEANLINESS</span></div><div class="mini"><b>${t.water}</b><span>WATER</span></div></div>
+ <div style="display:flex;justify-content:space-between;align-items:center"><span class="muted">✓ Verified ${t.cleaned}</span><button class="greenbtn" onclick="event.stopPropagation();details(${t.id})">VIEW DETAILS</button></div></div>`
+}
+function renderHome(){document.getElementById("homeToilets").innerHTML=[...toilets].sort((a,b)=>b.trust-a.trust).slice(0,3).map(toiletCard).join("")}
+function renderToilets(){
+ const q=(document.getElementById("toiletSearch")?.value||"").toLowerCase(), f=document.getElementById("trustFilter")?.value||"all";
+ const data=toilets.filter(t=>(t.name+t.area).toLowerCase().includes(q)).filter(t=>f==="all"||(f==="high"&&t.trust>=80)||(f==="moderate"&&t.trust>=60&&t.trust<80)||(f==="low"&&t.trust<60));
+ document.getElementById("toiletList").innerHTML=data.map(toiletCard).join("")||`<div class="card">No toilets match your search.</div>`;
+}
+function initMap(id){
+ const el=document.getElementById(id); if(!el)return;
+ if(id==="map"&&map){map.invalidateSize();return} if(id==="map2"&&map2){map2.invalidateSize();return}
+ const m=L.map(el).setView([28.6827,77.2062],13);
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(m);
+ toilets.forEach(t=>{const color=t.open?(t.trust>=80?"#16a66a":t.trust>=60?"#f2b84b":"#e05252"):"#667085";const icon=L.divIcon({className:"",html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};border:4px solid white;box-shadow:0 3px 12px #0003;display:grid;place-items:center;color:white;font-weight:700;font-size:10px">${t.trust}</div>`,iconSize:[28,28],iconAnchor:[14,14]});const marker=L.marker([t.lat,t.lng],{icon}).addTo(m);marker.bindPopup(`<b>${t.name}</b><br>Trust ${t.trust}/100<br>${t.open?"Open":"Closed"} · ${t.water}<br><button onclick="details(${t.id})" style="margin-top:7px;padding:6px 9px;border-radius:8px;background:#16a66a;color:white;border:0">View details</button>`);});
+ if(id==="map")map=m;else map2=m;
+}
+function details(id){
+ const t=toilets.find(x=>x.id===id); if(!t)return;
+ document.getElementById("modalContent").innerHTML=`<div class="details"><div><span class="muted">PUBLIC TOILET</span><h2 style="font-size:29px;margin:4px 0 7px">${t.name}</h2><p class="muted">${t.area} · ${t.distance} km from demo location</p><div style="display:flex;gap:8px;margin:14px 0">${badge(t.open?"OPEN":"CLOSED",t.open?"good":"closed")}${badge(t.clean,t.trust>=80?"good":t.trust>=60?"warn":"bad")}${badge(t.water,t.water==="AVAILABLE"?"good":"bad")}</div><div class="notice">${t.freshness>70?"✓ Verified recently — information confidence is high.":"⚠ Information may be outdated — confidence is lower."}</div><br><div class="bars"><div class="barrow"><span>Condition</span><div class="bar"><i style="width:${t.condition}%"></i></div><b>${t.condition}</b></div><div class="barrow"><span>Freshness</span><div class="bar"><i style="width:${t.freshness}%"></i></div><b>${t.freshness}</b></div><div class="barrow"><span>Trust</span><div class="bar"><i style="width:${t.trust}%"></i></div><b>${t.trust}</b></div></div></div><div><div class="score-ring" style="background:conic-gradient(var(--green) 0 ${t.trust}%,#e7edf3 ${t.trust}% 100%)"><strong>${t.trust}</strong></div><p style="text-align:center;font-weight:700;margin-top:14px">Sanitation Trust Index</p><p class="muted" style="text-align:center">Last cleaned ${t.cleaned}</p></div></div><hr style="border:0;border-top:1px solid var(--line);margin:24px 0"><div class="actions"><button class="greenbtn" onclick="showToast('Navigation opened in demo mode.');closeModal()">NAVIGATE</button><button class="ghost" style="color:var(--navy)" onclick="closeModal();document.getElementById('reportToilet').value='${t.id}';go('report')">REPORT ISSUE</button></div>`;
+ document.getElementById("modal").classList.add("show");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+function renderJobs(){
+ const q=(document.getElementById("jobSearch")?.value||"").toLowerCase(), min=+(document.getElementById("payFilter")?.value||0);
+ document.getElementById("jobList").innerHTML=jobs.filter(j=>(j.location+j.task).toLowerCase().includes(q)&&j.pay>=min).map(j=>`<div class="card job"><div class="toilet-top"><div><span class="muted">CLEANING WORKER NEEDED</span><h3>${j.location}</h3></div><div class="pay">₹${j.pay}</div></div><p>${j.task}</p><div class="job-meta">${badge(j.duration,"closed")}${badge(j.distance+" km","closed")}${badge(j.time,"closed")}</div><button class="greenbtn" onclick="applyJob(${j.id})">APPLY</button></div>`).join("");
+}
+function applyJob(id){const j=jobs.find(x=>x.id===id);showToast(`Application sent for ${j.location}.`);addNotification("Worker","Your application was sent for a new sanitation job.");}
+function completeJob(){showToast("Proof uploaded. Job marked complete and awaiting verification.");addNotification("Worker","Cleaning completed. Proof submitted for verification.");}
+function previewImage(){
+ const f=document.getElementById("issueImage").files[0];if(!f)return;
+ const reader=new FileReader();reader.onload=e=>{document.getElementById("preview").innerHTML=`<img src="${e.target.result}" style="max-width:180px;max-height:130px;border-radius:12px;margin-top:12px">`;document.getElementById("aiResult").innerHTML="<b>AI-assisted analysis:</b> Possible cleanliness issue detected. Human verification recommended.";};reader.readAsDataURL(f);
+}
+function populateReport(){document.getElementById("reportToilet").innerHTML=toilets.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")}
+document.getElementById("reportForm").addEventListener("submit",async e=>{
+ e.preventDefault();const t=toilets.find(x=>x.id==document.getElementById("reportToilet").value),issue=document.getElementById("issueType").value;
+ reports.unshift({toilet:t.name,issue,time:"just now"});t.reports++;t.freshness=98;t.trust=Math.max(10,t.trust-4);
+ try{await fetch("/api/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({toilet_id:t.id,issue,description:document.getElementById("description").value})})}catch(_){}
+ showToast("Report received. A sanitation worker or facility manager will be notified.");addNotification("Citizen","Your sanitation report has been received.");e.target.reset();document.getElementById("preview").innerHTML="";document.getElementById("aiResult").textContent="AI-assisted analysis will appear here after a photo is selected.";renderHome();
+});
+function addNotification(type,text){const box=document.getElementById("notifications");if(!box)return;box.insertAdjacentHTML("afterbegin",`<div class="notification"><span class="dot"></span><div><b>${type}</b><div class="muted">${text}</div><small class="muted">just now</small></div></div>`)}
+function renderNotifications(){document.getElementById("notifications").innerHTML=[["Citizen","Your sanitation report has been received."],["Worker","New cleaning job available 0.8 km away."],["Worker","Your job application was accepted."],["Employer","New worker applied for your cleaning job."],["Admin","Multiple users reported no water at Central Market Toilet."]].map(x=>`<div class="notification"><span class="dot"></span><div><b>${x[0]}</b><div class="muted">${x[1]}</div><small class="muted">Today</small></div></div>`).join("")}
+function renderAdmin(){document.getElementById("adminReports").innerHTML=reports.slice(0,6).map(r=>`<tr><td>${r.toilet}</td><td>${r.issue}</td><td>${r.time}</td><td><button class="greenbtn" style="padding:7px 10px" onclick="showToast('Response task created in demo mode.')">RESPOND</button></td></tr>`).join("")}
+function drawChart(){const c=document.getElementById("chart");if(!c)return;const ctx=c.getContext("2d"),w=c.width=c.clientWidth*2,h=c.height=c.clientHeight*2;ctx.scale(2,2);const W=c.clientWidth,H=c.clientHeight;ctx.strokeStyle="#16a66a";ctx.lineWidth=3;ctx.beginPath();const vals=[34,48,39,62,54,73,58];vals.forEach((v,i)=>{const x=15+i*(W-30)/(vals.length-1),y=H-20-v*(H-45)/80;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.fillStyle="#6d788b";ctx.font="11px DM Sans";["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach((d,i)=>ctx.fillText(d,10+i*(W-30)/6,H-3))}
+function findNearest(){const t=toilets[0];details(t.id);showToast(`Nearest toilet: ${t.name}, ${t.distance} km away.`)}
+function showToast(s){const x=document.getElementById("toast");x.textContent=s;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2800)}
+document.getElementById("roleSelect").addEventListener("change",e=>{document.querySelector(".rolebox").title=e.target.value;if(e.target.value==="admin"){document.querySelector(".admin-only").style.display="flex";go("admin")}else if(e.target.value==="worker"){go("work")}else go("home")});
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>go(b.dataset.page)));
+renderHome();renderToilets();renderJobs();renderNotifications();populateReport();renderAdmin();setTimeout(()=>initMap("map"),100);
+</script>
+</body>
+</html>
